@@ -114,12 +114,31 @@ If you have a local SonarQube stack running on Docker, you can certify the
 current provider worktree against it with:
 
 ```shell
-SONAR_TOKEN=your-local-sonar-token make quality-sonar
+make quality-bootstrap
+make quality-sonar
 ```
 
-The target generates `coverage.out`, waits for the quality gate result, and, on
-non-`main` branches, publishes a branch analysis with `main` as the new-code
-reference branch by default.
+The local bootstrap mirrors the pattern used in `../keftionnaire`:
+
+- it persists SonarQube local state in a generated `.env.local` outside the repo
+- it reuses the existing local Docker Sonar stack when available
+- if a sibling `../keftionnaire` bootstrap state exists, it can seed admin
+  access from it and generate a provider-specific scanner token automatically
+
+Useful commands:
+
+```shell
+# Show the generated env path and current local Sonar settings
+make quality-status
+
+# Recreate the local provider Sonar bootstrap state
+make quality-reset
+make quality-bootstrap
+```
+
+`make quality-sonar` generates `coverage.out`, waits for the quality gate
+result, and, on non-`main` branches, publishes a branch analysis with `main` as
+the new-code reference branch by default.
 
 ### Acceptance Tests
 

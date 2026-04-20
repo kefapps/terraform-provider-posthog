@@ -13,7 +13,7 @@ SONAR_COVERAGE_FILE ?= coverage.out
 SONAR_SCANNER ?= sonar-scanner
 
 default: fmt lint install generate
-.PHONY: fmt lint test testacc build install generate playground-binary playground-init playground-plan playground-apply playground-clean onepassword-sync quality-sonar release-alpha release-beta release
+.PHONY: fmt lint test testacc build install generate playground-binary playground-init playground-plan playground-apply playground-clean onepassword-sync quality-bootstrap quality-status quality-reset quality-sonar release-alpha release-beta release
 
 OP_BOOTSTRAP_ENV ?= $(CURDIR)/.op-bootstrap.env
 OP_RUNTIME_ENV ?= $(CURDIR)/.env
@@ -79,18 +79,21 @@ playground-clean:
 onepassword-sync:
 	./scripts/sync-1password-item.sh --env-file "$(OP_BOOTSTRAP_ENV)" --runtime-env "$(OP_RUNTIME_ENV)"
 
+quality-bootstrap:
+	./scripts/quality-sonarqube-local.sh bootstrap
+
+quality-status:
+	./scripts/quality-sonarqube-local.sh status
+
+quality-reset:
+	./scripts/quality-sonarqube-local.sh reset
+
 quality-sonar:
-	@if [ -z "$$SONAR_TOKEN" ]; then \
-		echo "SONAR_TOKEN is required."; \
-		exit 1; \
-	fi
-	go test -coverprofile=$(SONAR_COVERAGE_FILE) -covermode=atomic ./...
-	@BRANCH_NAME="$${SONAR_BRANCH_NAME:-$$(git branch --show-current 2>/dev/null || true)}"; \
-		ARGS="-Dsonar.host.url=$(SONAR_HOST_URL) -Dsonar.token=$$SONAR_TOKEN -Dsonar.qualitygate.wait=true"; \
-		if [ -n "$$BRANCH_NAME" ] && [ "$$BRANCH_NAME" != "$(SONAR_REFERENCE_BRANCH)" ]; then \
-			ARGS="$$ARGS -Dsonar.branch.name=$$BRANCH_NAME -Dsonar.newCode.referenceBranch=$(SONAR_REFERENCE_BRANCH)"; \
-		fi; \
-		$(SONAR_SCANNER) $$ARGS
+	SONAR_HOST_URL=$(SONAR_HOST_URL) \
+	SONAR_REFERENCE_BRANCH=$(SONAR_REFERENCE_BRANCH) \
+	SONAR_COVERAGE_FILE=$(SONAR_COVERAGE_FILE) \
+	SONAR_SCANNER=$(SONAR_SCANNER) \
+	./scripts/sast-sonarqube.sh
 
 # Release targets - create signed tags and push to trigger GoReleaser
 # Usage: make release-alpha VERSION=0.1.0 NUM=1  -> v0.1.0-alpha.1
