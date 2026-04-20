@@ -20,6 +20,9 @@ bin/
 coverage.*
 *.coverprofile
 profile.cov
+coverage.out
+.scannerwork/
+sonar-scanner.log
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
@@ -30,6 +33,7 @@ go.work.sum
 
 # env file
 .env
+.op-bootstrap.env
 
 # Editor/IDE
 .idea/

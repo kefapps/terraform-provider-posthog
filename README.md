@@ -37,6 +37,47 @@ make playground-apply
 
 This builds the provider binary and configures Terraform to use your local build via `dev_overrides` - no `terraform init` required.
 
+### Local secrets with 1Password CLI
+
+This repository can be driven directly from environment variables loaded by
+1Password CLI with `op://` secret references.
+
+Two local files are used:
+
+- `.op-bootstrap.env`: raw values you fill once locally, then sync into 1Password
+- `.env`: runtime `op://` references generated from the synced 1Password item
+
+Bootstrap flow:
+
+1. Fill `.op-bootstrap.env` with the real PostHog values.
+2. Run `make onepassword-sync` to create or update the matching 1Password item and generate `.env`.
+3. Run provider commands through `op run --env-file=.env -- ...`.
+
+```shell
+# Verify that 1Password CLI is signed in
+op whoami
+
+# Create/update the 1Password item and generate .env
+make onepassword-sync
+
+# Validate the ANS-227 playground config against your PostHog dev project
+op run --env-file=.env -- make playground-plan
+
+# Apply the playground config
+op run --env-file=.env -- make playground-apply
+
+# Run acceptance tests
+op run --env-file=.env -- make testacc
+```
+
+The process environment names expected by the provider are:
+
+- `POSTHOG_API_KEY`
+- `POSTHOG_PROJECT_ID`
+- `POSTHOG_HOST`
+- `POSTHOG_ORGANIZATION_ID`
+- `POSTHOG_TEST_USER_EMAIL` for the acceptance tests that require an existing organization member
+
 ### Manual Setup
 
 If you prefer to test outside the playground directory:
@@ -66,6 +107,19 @@ make playground-clean
 ```shell
 go test ./...
 ```
+
+### Local SonarQube Quality Gate
+
+If you have a local SonarQube stack running on Docker, you can certify the
+current provider worktree against it with:
+
+```shell
+SONAR_TOKEN=your-local-sonar-token make quality-sonar
+```
+
+The target generates `coverage.out`, waits for the quality gate result, and, on
+non-`main` branches, publishes a branch analysis with `main` as the new-code
+reference branch by default.
 
 ### Acceptance Tests
 
