@@ -28,3 +28,27 @@ Terraform only:
 For local validation with the official provider workflow, the ignored
 `playground/main.tf` in the repository root mirrors this example directly for
 `make playground-plan` and `make playground-apply`.
+
+## Validation status (`KEF-170`)
+
+The current slice has been validated against a dedicated PostHog test project
+rather than the shared Ansyo `dev` project.
+
+Observed workflow status:
+
+- `plan` is viable.
+- `apply` is viable.
+- `import` is viable for adoption, but it is not currently a pure no-op import
+  for this slice.
+
+For the imported `ANS-227` resources, the first post-import plan showed a small
+reconciliation drift on:
+
+- `posthog_feature_flag.filters`, because the API injects null
+  `aggregation_group_type_index` fields.
+- `posthog_insight.query_json` on some insights, because the API injects
+  `version = 2`.
+
+After one reconciliation `terraform apply`, a fresh `terraform plan` returned
+`No changes`, so the imported resources converge cleanly once state and remote
+objects are re-aligned.
