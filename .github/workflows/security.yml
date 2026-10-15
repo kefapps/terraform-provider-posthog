@@ -20,7 +20,7 @@ jobs:
   # Dependency vulnerability scanning
   govulncheck:
     name: Go Vulnerability Check
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, terraform-provider-posthog-tests-linux]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
@@ -41,7 +41,7 @@ jobs:
       security-events: write
       actions: read
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, terraform-provider-posthog-tests-linux]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: securego/gosec@223e19b8856e00f02cc67804499a83f77e208f3c # v2.25.0
@@ -67,7 +67,7 @@ jobs:
   # Dependency review for PRs
   dependency-review:
     name: Dependency Review
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, terraform-provider-posthog-tests-linux]
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

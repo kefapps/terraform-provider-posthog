@@ -13,7 +13,7 @@ permissions:
 jobs:
   generate:
     name: Generate and commit
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, terraform-provider-posthog-tests-linux]
     # Only run on PRs from the same repo (not forks) to allow pushing
     if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
